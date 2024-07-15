@@ -2,7 +2,7 @@ import java.util.*;
 
 // Объявление класса `HangmanGame`, представляющего игру "Виселица"
 public class HangmanGame {
-    private final GameState gameState; // Поле для хранения состояния игры
+    private GameState gameState; // Поле для хранения состояния игры
     private static final String[] DICTIONARY = {"example", "hangman", "java", "programming"}; // Словарь возможных слов для игры
 
     // Конструктор, который инициализирует игру с выбранным случайным словом
@@ -21,32 +21,44 @@ public class HangmanGame {
     public void start() {
         Scanner scanner = new Scanner(System.in);
 
-        // Цикл, который продолжается, пока игра не закончится
-        while (isGameContinues()) {
-            displayGameState(); // Отображение текущего состояния игры
-            System.out.print("Введите букву: ");
-            char guessedLetter = scanner.next().toLowerCase().charAt(0); // Ввод буквы и перевод её в нижний регистр
+        do {
+            // Цикл, который продолжается, пока игра не закончится
+            while (isGameContinues()) {
+                displayGameState(); // Отображение текущего состояния игры
+                System.out.print("Введите букву: ");
+                char guessedLetter = scanner.next().toLowerCase().charAt(0); // Ввод буквы и перевод её в нижний регистр
 
-            // Проверка, использовалась ли уже эта буква
-            if (!gameState.getUsedLetters().contains(guessedLetter)) {
-                gameState.getUsedLetters().add(guessedLetter); // Добавление буквы в список использованных
-                if (gameState.getWord().contains(String.valueOf(guessedLetter))) {
-                    updateWordMask(guessedLetter); // Обновление маски слова, если буква угадана
+                // Проверка, использовалась ли уже эта буква
+                if (!gameState.getUsedLetters().contains(guessedLetter)) {
+                    gameState.getUsedLetters().add(guessedLetter); // Добавление буквы в список использованных
+                    if (gameState.getWord().contains(String.valueOf(guessedLetter))) {
+                        updateWordMask(guessedLetter); // Обновление маски слова, если буква угадана
+                    } else {
+                        gameState.setMistakes(gameState.getMistakes() + 1); // Увеличение количества ошибок, если буква не угадана
+                    }
                 } else {
-                    gameState.setMistakes(gameState.getMistakes() + 1); // Увеличение количества ошибок, если буква не угадана
+                    System.out.println("Вы уже использовали эту букву.");
                 }
-            } else {
-                System.out.println("Вы уже использовали эту букву.");
             }
-        }
 
-        // Проверка, выиграна ли игра
-        if (isGameWon()) {
-            System.out.println("Поздравляем, вы выиграли! Загаданное слово: " + gameState.getWord());
-        } else {
-            displayHangman(); // Отображение финального состояния виселицы
-            System.out.println("К сожалению, вы проиграли. Загаданное слово: " + gameState.getWord());
+            // Проверка, выиграна ли игра
+            if (isGameWon()) {
+                System.out.println("Поздравляем, вы выиграли! Загаданное слово: " + gameState.getWord());
+            } else {
+                displayHangman(); // Отображение финального состояния виселицы
+                System.out.println("К сожалению, вы проиграли. Загаданное слово: " + gameState.getWord());
+            }
+        } while (restartGame(scanner));
+    }
+
+    private boolean restartGame(Scanner scanner) {
+        System.out.println("Если хотите начать игру заново, введите 'yes'");
+        String str = scanner.next();
+        if ("yes".equals(str)) {
+            gameState = new GameState(chooseWord());
+            return true;
         }
+        return false;
     }
 
     // Метод для отображения текущего состояния игры
